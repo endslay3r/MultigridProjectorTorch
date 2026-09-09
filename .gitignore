@@ -1,0 +1,15 @@
+# Build outputs
+bin/
+obj/
+
+# Visual Studio files
+.vs/
+*.user
+*.suo
+
+# Machine-specific local paths (contains YOUR hardcoded E:\ install paths)
+Directory.Build.props
+
+# Rider/ReSharper, if you ever use it
+.idea/
+*.DotSettings.user

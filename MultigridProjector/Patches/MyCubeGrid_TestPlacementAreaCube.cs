@@ -1,0 +1,83 @@
+using System;
+using HarmonyLib;
+using MultigridProjector.Logic;
+using MultigridProjector.Utilities;
+using Sandbox.Definitions;
+using Sandbox.Game.Entities;
+using VRage.Game.Entity;
+using VRage.Game.ObjectBuilders.Definitions.SessionComponents;
+using VRageMath;
+
+namespace MultigridProjector.Patches
+{
+    // ReSharper disable once UnusedType.Global
+    [HarmonyPatch(typeof(MyCubeGrid))]
+    [HarmonyPatch("TestPlacementAreaCube",
+        new[] {
+            typeof(MyCubeGrid),
+            typeof(MyGridPlacementSettings), // settings
+            typeof(Vector3I),
+            typeof(Vector3I),
+            typeof(MyBlockOrientation),
+            typeof(MyCubeBlockDefinition),
+            typeof(MyCubeGrid), // touchingGrid
+            typeof(ulong),
+            typeof(MyEntity), // ignoredEntity
+            typeof(bool), // ignoreFracturedPieces
+            typeof(bool), // isProjected
+            typeof(bool), // forceCheck
+            typeof(bool), // wheelsAsCylinders (new in 1.207.020)
+        },
+        new []
+        {
+            ArgumentType.Normal,
+            ArgumentType.Ref, // settings
+            ArgumentType.Normal,
+            ArgumentType.Normal,
+            ArgumentType.Normal,
+            ArgumentType.Normal,
+            ArgumentType.Out, // touchingGrid
+            ArgumentType.Normal,
+            ArgumentType.Normal, // ignoredEntity
+            ArgumentType.Normal,
+            ArgumentType.Normal,
+            ArgumentType.Normal,
+            ArgumentType.Normal, // wheelsAsCylinders (new in 1.207.020)
+        })]
+    [EnsureOriginal("7eec76c6")]
+    // ReSharper disable once InconsistentNaming
+    public static class MyCubeGrid_TestPlacementAreaCube
+    {
+        [Everywhere]
+        // ReSharper disable once UnusedMember.Global
+        private static void Postfix(
+            MyCubeGrid targetGrid,
+            Vector3I min,
+            bool isProjected,
+            // ReSharper disable once InconsistentNaming
+            ref bool __result)
+        {
+            if (__result)
+                return;
+
+            if (!isProjected)
+                return;
+
+            if (!MultigridProjection.TryFindProjectionByBuiltGrid(targetGrid, out var projection, out var subgrid))
+                return;
+            
+#if DEBUG
+            __result = __result || projection.TestPlacementAreaCube(subgrid, targetGrid, min);
+#else
+            try
+            {
+                __result = __result || projection.TestPlacementAreaCube(subgrid, targetGrid, min);
+            }
+            catch (Exception e)
+            {
+                PluginLog.Error(e);
+            }
+#endif
+        }
+    }
+}

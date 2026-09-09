@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<PluginManifest xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <Name>Multigrid Projector Torch Fix</Name>
+  <Guid>B98CA185-951D-4180-A0DE-FA4F187890EF</Guid>
+  <Repository></Repository>
+  <Version>v0.8.7.0</Version>
+</PluginManifest>
