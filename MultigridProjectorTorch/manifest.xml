@@ -3,5 +3,5 @@
 	<Name>Multigrid Projector Torch Fix</Name>
 	<Guid>B98CA185-951D-4180-A0DE-FA4F187890EF</Guid>
 	<Repository>MultigridProjectorTorch</Repository>
-	<Version>v1.0.0</Version>
+	<Version>v1.1.0</Version>
 </PluginManifest>
