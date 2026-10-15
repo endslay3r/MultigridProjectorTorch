@@ -28,7 +28,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)Utilities\EnsureOriginal.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utilities\Events.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utilities\ExecLocation.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utilities\GameAssembliesToPublicize.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utilities\Hashing.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utilities\IgnoresAccessChecksToAttribute.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utilities\IPluginLogger.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utilities\MultigridProjectorConfig.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utilities\OrientationAlgebra.cs" />
@@ -61,9 +63,9 @@
     <Content Include="$(MSBuildThisFileDirectory)..\README.md">
       <Link>README.md</Link>
     </Content>
-    <Content Include="$(MSBuildThisFileDirectory)Patches\MyMechanicalConnectionBlockBase_CreateTopPart.original.il" />
-    <Content Include="$(MSBuildThisFileDirectory)Patches\MyMechanicalConnectionBlockBase_CreateTopPart.patched.il" />
-    <Content Include="$(MSBuildThisFileDirectory)Patches\MyMechanicalConnectionBlockBase_OnBuildSuccess.original.il" />
-    <Content Include="$(MSBuildThisFileDirectory)Patches\MyMechanicalConnectionBlockBase_OnBuildSuccess.patched.il" />
+    <Content Include="$(MSBuildThisFileDirectory)Patches\MyMechanicalConnectionBlockBase.CreateTopPart.original.il" />
+    <Content Include="$(MSBuildThisFileDirectory)Patches\MyMechanicalConnectionBlockBase.CreateTopPart.patched.il" />
+    <Content Include="$(MSBuildThisFileDirectory)Patches\MyMechanicalConnectionBlockBase.OnBuildSuccess.original.il" />
+    <Content Include="$(MSBuildThisFileDirectory)Patches\MyMechanicalConnectionBlockBase.OnBuildSuccess.patched.il" />
   </ItemGroup>
 </Project>

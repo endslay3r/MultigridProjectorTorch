@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Reflection.Emit;
 using HarmonyLib;
-using MultigridProjector.Tools;
 using MultigridProjector.Utilities;
 using Sandbox.Game.Entities.Blocks;
 
@@ -71,15 +71,15 @@ namespace MultigridProjector.Patches
     // ReSharper disable once UnusedType.Global
     [HarmonyPatch(typeof(MyMechanicalConnectionBlockBase))]
     [HarmonyPatch("CreateTopPart")]
-    [EnsureOriginal("439d944c", "dc43452a")]
+    [EnsureOriginal("439d944c")]
     // ReSharper disable once InconsistentNaming
     public static class MyMechanicalConnectionBlockBase_CreateTopPart
     {
         [ServerOnly]
-        public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
+        public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions, MethodBase patchedMethod, ILGenerator generator)
         {
             var il = instructions.ToList();
-            il.RecordOriginalCode();
+            il.RecordOriginalCode(patchedMethod);
 
             var j = il.FindIndex(i => i.opcode == OpCodes.Ldarg_S);
             var k = il.FindIndex(j, i => i.opcode == OpCodes.Ldarg_0);
@@ -104,7 +104,7 @@ namespace MultigridProjector.Patches
             
             il[j].labels.Add(l15);
 
-            il.RecordPatchedCode();
+            il.RecordPatchedCode(patchedMethod);
             return il.AsEnumerable();
         }
     }
