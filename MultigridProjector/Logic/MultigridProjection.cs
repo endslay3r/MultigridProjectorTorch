@@ -1686,6 +1686,15 @@ System.NullReferenceException: Object reference not set to an instance of an obj
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private bool RequiresOutsideVoxel(MySlimBlock block, MyCubeGrid builtGrid)
+        {
+            // Blocks whose definition requires placement outside voxel terrain
+            // (cannot be embedded in asteroids or planets). Currently all
+            // projected blocks are checked against voxels.
+            return block.BlockDefinition is MyCubeBlockDefinition;
+        }
+
         private bool CheckVoxels(MySlimBlock block)
         {
             if (Projector.PositionComp == null)
@@ -1694,6 +1703,7 @@ System.NullReferenceException: Object reference not set to an instance of an obj
             EnsureVoxelCache();
 
             List<MyVoxelBase> voxels;
+            var stale = false;
             using (voxelCacheLock.Read())
             {
                 voxels = voxelCache.ToList(); // snapshot; adjust the element type to match your cache
@@ -1706,8 +1716,6 @@ System.NullReferenceException: Object reference not set to an instance of an obj
                     gridSize * ((Vector3D)block.Min - 0.5),
                     gridSize * ((Vector3D)block.Max + 0.5));
                 var worldMatrix = block.CubeGrid.WorldMatrix;
-
-                var stale = false;
                 foreach (var voxel in voxels)
                 {
                     if (voxel.Closed || !voxel.InScene)
@@ -1736,7 +1744,6 @@ System.NullReferenceException: Object reference not set to an instance of an obj
             }
 
             return false;
-        }
         }
 
         [ServerOnly]
