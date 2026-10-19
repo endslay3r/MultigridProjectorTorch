@@ -71,7 +71,9 @@ namespace MultigridProjector.Patches
     // ReSharper disable once UnusedType.Global
     [HarmonyPatch(typeof(MyMechanicalConnectionBlockBase))]
     [HarmonyPatch("CreateTopPart")]
-    [EnsureOriginal("439d944c")]
+    // 439d944c: original hash this fork was built against (game ~1.205.023)
+    // dc43452a: current game body; the anchored segment (first Ldarg_S / Ldarg_0 with labels / myCubeSize in loc.0) is unchanged, verified via IL dump 2026-10-18
+    [EnsureOriginal("439d944c", "dc43452a")]
     // ReSharper disable once InconsistentNaming
     public static class MyMechanicalConnectionBlockBase_CreateTopPart
     {

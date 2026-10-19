@@ -63,6 +63,14 @@ namespace MultigridProjector.Logic
         // ReSharper disable once ConvertToConstant.Global
         public static bool SetPreviewBlockVisuals = true;
 
+        // Allow welding projected blocks which intersect voxel terrain (asteroids, planets).
+        // Defaults to true to match the client hologram display and vanilla projector behavior.
+        // Set to false to restore the stricter upstream voxel rejection. Configured by UI on Torch.
+        // ReSharper disable once MemberCanBePrivate.Global
+        // ReSharper disable once FieldCanBeMadeReadOnly.Global
+        // ReSharper disable once ConvertToConstant.Global
+        public static bool AllowProjectionInVoxels = true;
+
         // Enables detecting block state with Havok intersection enabled,
         // used only on client side if block highlighting is enabled for the projector
         // ReSharper disable once UnassignedField.Global
@@ -1535,7 +1543,10 @@ System.NullReferenceException: Object reference not set to an instance of an obj
             if (!checkHavokIntersections)
                 return BuildCheckResult.OK;
 
-            if (RequiresOutsideVoxel(previewBlock, builtGrid) && CheckVoxels(previewBlock))
+            // Voxel rejection is optional: when AllowProjectionInVoxels is true (default) projected
+            // blocks touching voxel terrain stay weldable, matching the client hologram and vanilla behavior.
+            // Set AllowProjectionInVoxels=false to restore the stricter upstream rejection.
+            if (!AllowProjectionInVoxels && RequiresOutsideVoxel(previewBlock, builtGrid) && CheckVoxels(previewBlock))
                 return BuildCheckResult.IntersectedWithSomethingElse;
 
             var gridPlacementSettings = new MyGridPlacementSettings { SnapMode = SnapMode.OneFreeAxis };
@@ -1666,7 +1677,8 @@ System.NullReferenceException: Object reference not set to an instance of an obj
         private void InvalidateVoxelCache()
         {
             voxelCacheProjectorPosition = Vector3D.NegativeInfinity;
-            voxelCache.Clear();
+            using (voxelCacheLock.Write())
+                voxelCache.Clear();
         }
 
         private void EnsureVoxelCache()
@@ -1703,43 +1715,43 @@ System.NullReferenceException: Object reference not set to an instance of an obj
             EnsureVoxelCache();
 
             List<MyVoxelBase> voxels;
-            var stale = false;
             using (voxelCacheLock.Read())
             {
-                voxels = voxelCache.ToList(); // snapshot; adjust the element type to match your cache
+                voxels = voxelCache.ToList(); // snapshot under read lock
+            }
 
-                if (voxels.Count == 0)
-                    return false;
+            var stale = false;
+            if (voxels.Count == 0)
+                return false;
 
-                var gridSize = block.CubeGrid.GridSize;
-                var boundingBoxD = new BoundingBoxD(
-                    gridSize * ((Vector3D)block.Min - 0.5),
-                    gridSize * ((Vector3D)block.Max + 0.5));
-                var worldMatrix = block.CubeGrid.WorldMatrix;
-                foreach (var voxel in voxels)
+            var gridSize = block.CubeGrid.GridSize;
+            var boundingBoxD = new BoundingBoxD(
+                gridSize * ((Vector3D)block.Min - 0.5),
+                gridSize * ((Vector3D)block.Max + 0.5));
+            var worldMatrix = block.CubeGrid.WorldMatrix;
+            foreach (var voxel in voxels)
+            {
+                if (voxel.Closed || !voxel.InScene)
                 {
-                    if (voxel.Closed || !voxel.InScene)
-                    {
-                        stale = true;
-                        continue;
-                    }
+                    stale = true;
+                    continue;
+                }
 
-                    try
-                    {
-                        if (voxel.IsAnyAabbCornerInside(ref worldMatrix, boundingBoxD))
-                            return true;
-                    }
-                    catch (Exception)
-                    {
-                        // Voxel storage went away mid-check (see the 2025-09-01 report); rebuild the cache.
-                        stale = true;
-                    }
+                try
+                {
+                    if (voxel.IsAnyAabbCornerInside(ref worldMatrix, boundingBoxD))
+                        return true;
+                }
+                catch (Exception)
+                {
+                    // Voxel storage went away mid-check (see the 2025-09-01 report); rebuild the cache.
+                    stale = true;
                 }
             }
 
             if (stale)
             {
-                using (voxelCacheLock.Write()) // assumes your RwLock exposes Write()
+                using (voxelCacheLock.Write())
                     voxelCache.Clear();
             }
 

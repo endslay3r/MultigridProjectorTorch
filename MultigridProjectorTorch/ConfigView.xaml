@@ -22,6 +22,8 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
             <!-- TODO: Add row definitions if you start using new rows -->
         </Grid.RowDefinitions>
 
@@ -35,5 +37,9 @@
         <!-- Set preview block visuals -->
         <CheckBox Grid.Row="3" Grid.Column="0" Name="SetPreviewBlockVisuals" IsChecked="{Binding SetPreviewBlockVisuals}" Margin="5" />
         <TextBlock Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="3" Text="Set preview block visuals on server side (required by mods depending on preview block transparency)" VerticalAlignment="Center" Margin="5" />
+
+        <!-- Allow welding projections in voxels -->
+        <CheckBox Grid.Row="4" Grid.Column="0" Name="AllowProjectionInVoxels" IsChecked="{Binding AllowProjectionInVoxels}" Margin="5" />
+        <TextBlock Grid.Row="4" Grid.Column="1" Grid.ColumnSpan="3" Text="Allow welding projected blocks touching voxel terrain (matches hologram/vanilla; uncheck for strict upstream behavior)" VerticalAlignment="Center" Margin="5" TextWrapping="Wrap" />
     </Grid>
 </UserControl>

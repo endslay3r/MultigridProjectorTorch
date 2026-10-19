@@ -55,6 +55,12 @@ namespace MultigridProjectorServer
             config = Persistent<MultigridProjectorConfig>.Load(configPath);
             config.Data.PropertyChanged += OnPropertyChanged;
 
+            // Apply config to the shared logic immediately and make the loaded values visible in the log,
+            // so config delivery problems can be diagnosed from the server log alone
+            MultigridProjection.SetPreviewBlockVisuals = Config.SetPreviewBlockVisuals;
+            MultigridProjection.AllowProjectionInVoxels = Config.AllowProjectionInVoxels;
+            PluginLog.Info($"Config loaded from {configPath}: SetPreviewBlockVisuals={Config.SetPreviewBlockVisuals}; AllowProjectionInVoxels={Config.AllowProjectionInVoxels}");
+
             var isOldDotNetFramework = Environment.Version.Major < 5;
             if (isOldDotNetFramework && !WineDetector.IsRunningInWineOrProton())
             {
@@ -82,6 +88,7 @@ namespace MultigridProjectorServer
         {
             // FIXME: Hacking the config there, replace with proper plugin config
             MultigridProjection.SetPreviewBlockVisuals = Config.SetPreviewBlockVisuals;
+            MultigridProjection.AllowProjectionInVoxels = Config.AllowProjectionInVoxels;
         }
 
         private void SessionStateChanged(ITorchSession session, TorchSessionState newstate)
@@ -94,6 +101,7 @@ namespace MultigridProjectorServer
 
                     // FIXME: Hacking the config there, replace with proper plugin config
                     MultigridProjection.SetPreviewBlockVisuals = Config.SetPreviewBlockVisuals;
+                    MultigridProjection.AllowProjectionInVoxels = Config.AllowProjectionInVoxels;
 
                     mgpSession = new MultigridProjectorSession();
                     break;

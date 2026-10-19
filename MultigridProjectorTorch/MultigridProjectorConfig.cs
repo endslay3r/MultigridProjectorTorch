@@ -24,6 +24,19 @@ namespace MultigridProjectorServer
             }
         }
 
+        private bool allowProjectionInVoxels = true;
+
+        [Display(Order = 2, GroupName = "Compatibility", Name = "Allow welding projections in voxels", Description = "Allow projected blocks that touch or intersect voxel terrain to be welded. Matches the client hologram display and vanilla projector behavior. Disable to restore the stricter upstream behavior.")]
+        public bool AllowProjectionInVoxels
+        {
+            get => allowProjectionInVoxels;
+            set
+            {
+                allowProjectionInVoxels = value;
+                OnPropertyChanged();
+            }
+        }
+
 #if INCOMPLETE_UNTESTED
         private bool _blockLimit;
         [Display(Description = "Enforce player block limit", Name = "Block limit", Order = 2)]
