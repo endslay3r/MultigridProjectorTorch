@@ -35,6 +35,15 @@ namespace MultigridProjector.Extensions
             // Remove nested blueprints from projectors, it still allows for repair projections and missile welders
             if (blockBuilder is MyObjectBuilder_ProjectorBase projectorBuilder)
                 RemoveNestedRepairBlueprints(projectorBuilder);
+
+            // 1.0.4: Clear pilot and autopilot of cockpit builders so Load Repair Projection
+            // does not crash when a character is seated in a cockpit, seat or cryo chamber.
+            // MyGridClipboard.RemovePilots does the same for vanilla blueprints.
+            if (blockBuilder is MyObjectBuilder_Cockpit cockpitBuilder)
+            {
+                cockpitBuilder.Pilot = null;
+                cockpitBuilder.Autopilot = null;
+            }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

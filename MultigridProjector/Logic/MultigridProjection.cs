@@ -71,6 +71,16 @@ namespace MultigridProjector.Logic
         // ReSharper disable once ConvertToConstant.Global
         public static bool AllowProjectionInVoxels = true;
 
+        // Allow welding projected blocks beside a sibling subgrid mounted at an angle (rotors, hinges, etc.).
+        // The game's placement test rejects such blocks as soon as their shape touches a non-axis-aligned
+        // dynamic grid, without looking at the cells. When enabled, blocks are allowed through if everything
+        // in their cells belongs to the built subgrids of this projection and none reaches into the inner
+        // half of the block. Defaults to true (SE-1402).
+        // ReSharper disable once MemberCanBePrivate.Global
+        // ReSharper disable once FieldCanBeMadeReadOnly.Global
+        // ReSharper disable once ConvertToConstant.Global
+        public static bool BuildBesideAngledSubgrids = true;
+
         // Enables detecting block state with Havok intersection enabled,
         // used only on client side if block highlighting is enabled for the projector
         // ReSharper disable once UnassignedField.Global
@@ -1564,11 +1574,60 @@ System.NullReferenceException: Object reference not set to an instance of an obj
             if (!PreviewBaseBlocks.TryGetValue(new BlockMinLocation(subgrid.Index, min), out var previewBlock))
                 return false;
 
-            if (!subgrid.BaseConnections.TryGetValue(previewBlock.Position, out var baseConnection))
+            // Existing rotor top-part check
+            if (subgrid.BaseConnections.TryGetValue(previewBlock.Position, out var baseConnection))
+            {
+                GetCounterparty(baseConnection, out var topSubgrid);
+                if (topSubgrid.HasBuilt)
+                    return true;
+            }
+
+            // 1.0.2: Allow welding projected blocks beside a sibling subgrid mounted at an angle
+            // when the game's placement test would otherwise reject them (SE-1402).
+            if (BuildBesideAngledSubgrids)
+            {
+                var max = min + previewBlock.BlockDefinition.Size - Vector3I.One;
+                if (IsBarelyTouchingOnlySiblingSubgrids(targetGrid, min, max))
+                    return true;
+            }
+
+            return false;
+        }
+
+        // 1.0.2: Lets projected blocks be built beside a sibling subgrid mounted at an angle (rotors, hinges, etc.).
+        // The game's placement test rejects such blocks as soon as their shape touches a non-axis-aligned
+        // dynamic grid, without looking at the cells. When BuildBesideAngledSubgrids is enabled, blocks are
+        // allowed through if every block in their cells belongs to a built subgrid of this projection
+        // (SE-1402).
+        [Everywhere]
+        public bool IsBarelyTouchingOnlySiblingSubgrids(MyCubeGrid targetGrid, Vector3I min, Vector3I max)
+        {
+            if (!BuildBesideAngledSubgrids)
                 return false;
 
-            GetCounterparty(baseConnection, out var topSubgrid);
-            if (!topSubgrid.HasBuilt)
+            var siblingFound = false;
+            for (var x = min.X; x <= max.X; x++)
+            {
+                for (var y = min.Y; y <= max.Y; y++)
+                {
+                    for (var z = min.Z; z <= max.Z; z++)
+                    {
+                        var cell = new Vector3I(x, y, z);
+                        var block = targetGrid.GetCubeBlock(cell);
+                        if (block == null)
+                            continue;
+
+                        var builtGrid = block.CubeGrid;
+                        if (!TryFindSubgridByBuiltGrid(builtGrid, out _))
+                            return false;
+
+                        siblingFound = true;
+                    }
+                }
+            }
+
+            // The game had another reason to reject the block (no sibling subgrid nearby)
+            if (!siblingFound)
                 return false;
 
             return true;

@@ -49,6 +49,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\MyObjectBuilderExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\MyProjectorBaseExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Logic\MultigridProjection.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Logic\BuildRequests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Logic\MultigridUpdateWork.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Logic\ProjectionStats.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Logic\ProjectorSubgrid.cs" />

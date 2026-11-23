@@ -113,6 +113,10 @@
       <HintPath>$(Torch)\DedicatedServer64\VRage.Scripting.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="Havok">
+      <HintPath>$(Torch)\DedicatedServer64\Havok.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
   </ItemGroup>
 
   <ItemGroup>
@@ -120,6 +124,10 @@
     <Content Include="manifest.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Reference Include="Havok">
+      <HintPath>$(Torch)\DedicatedServer64\Havok.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
   </ItemGroup>
 
   <ItemGroup>
@@ -130,6 +138,10 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     -->
+    <Reference Include="Havok">
+      <HintPath>$(Torch)\DedicatedServer64\Havok.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
   </ItemGroup>
 
   <!-- Uncomment to enable publicizer support
