@@ -14,6 +14,7 @@ using Sandbox.Common.ObjectBuilders;
 using Sandbox.Definitions;
 using Sandbox.Engine.Multiplayer;
 using Sandbox.Game.Entities;
+using Sandbox.Game.Entities.Character;
 using Sandbox.Game.Entities.Blocks;
 using Sandbox.Game.Entities.Cube;
 using Sandbox.Game.EntityComponents;
@@ -1415,6 +1416,24 @@ System.NullReferenceException: Object reference not set to an instance of an obj
                 return;
             }
 
+            // 1.0.5: The checks vanilla BuildInternal does since 1.211.018: world block limits, and in
+            // survival without an instant creative tools build the first component in the builder's inventory.
+            var sender = MyEventContext.Current.Sender.Value;
+            var definition = previewBlock.BlockDefinition;
+            var creativeToolsBuild = requestInstant && MySession.Static.CreativeToolsEnabled(sender);
+            var pcuToBuild = MySession.Static.CreativeMode || creativeToolsBuild ? definition.PCU : MyCubeBlockDefinition.PCU_CONSTRUCTION_STAGE_COST;
+            if (MySession.Static.IsWithinWorldLimits(out _, owner, definition.GetLimitType(), pcuToBuild, 1, builtGrid.BlocksCount) != MySession.LimitResult.Passed)
+            {
+                BuildRequests.LogOnce(sender, "world limits", $"Refused to build {definition.Id.SubtypeName} for {sender}: world block limits");
+                return;
+            }
+
+            if (MySession.Static.SurvivalMode && !creativeToolsBuild && !BuilderHoldsFirstComponent(builder, definition))
+            {
+                BuildRequests.LogOnce(sender, "no component", $"Refused to build {definition.Id.SubtypeName} for {sender}: the builder holds none of its first component");
+                return;
+            }
+
             // Transform from the preview grid's coordinates to the grid being build (they don't match exactly for the projecting grid)
             // FIXME: Potential optimization opportunity on the non-projecting grids
 
@@ -2415,6 +2434,26 @@ System.NullReferenceException: Object reference not set to an instance of an obj
                 if (referenceFixer.TryMapPreviewToBuiltTerminalBlock<MyTerminalBlock>(bpBlockId, out var terminalBlock))
                     yield return terminalBlock.EntityId;
             }
+        }
+
+        // 1.0.5 / 1.0.6: A character or a ship welder holding at least one of the block's first component.
+        // A request the server makes itself for a block other than a ship welder passes: mods'
+        // tools like ToolCore's welders take the component out of the tool before they call
+        // projector.Build, and no client can send such a request.
+        private static bool BuilderHoldsFirstComponent(long builder, MyCubeBlockDefinition definition)
+        {
+            if (!MyEntities.TryGetEntityById(builder, out var entity))
+                return false;
+
+            if (MyEventContext.Current.IsLocallyInvoked && entity is MyCubeBlock && !(entity is IMyShipWelder))
+                return true;
+
+            if (!(entity is MyCharacter || entity is IMyShipWelder))
+                return false;
+
+            var inventory = MyCubeBuilder.BuildComponent.GetBuilderInventory(entity);
+            var components = definition.Components;
+            return inventory != null && components != null && components.Length != 0 && inventory.GetItemAmount(components[0].Definition.Id) >= 1;
         }
     }
 }

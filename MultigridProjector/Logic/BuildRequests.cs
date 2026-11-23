@@ -67,7 +67,7 @@ namespace MultigridProjector.Logic
             );
         }
 
-        private static void LogOnce(ulong sender, string kind, string message)
+        internal static void LogOnce(ulong sender, string kind, string message)
         {
             lock (Logged)
                 if (!Logged.Add($"{sender} {kind}"))
